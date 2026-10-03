@@ -8,7 +8,7 @@ Mulch Patcherの初回リリースです。
 - ドラッグ＆ドロップとコマンドラインに対応。
 - Flips・WinIPS・NUPSとの相互互換テストを実施。
 
-`MulchPatcher.exe` をダウンロードして実行してください。ZIPには説明書・ライセンス・SHA256も入っています。
+`MulchPatcher.exe` をダウンロードして実行してください。
 Windows 10 / 11、.NET Framework 4.8。追加DLLは不要です。
 
 作成形式の初期値はBPSです。IPSでは16 MiB→32 MiBを表現できません。BPS / UPSを使用してください。

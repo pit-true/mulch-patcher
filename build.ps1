@@ -20,9 +20,5 @@ if (!$SkipTests) {
 }
 $dist = Join-Path $PSScriptRoot 'dist'
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
-Copy-Item -LiteralPath 'bin\Release\MulchPatcher.exe','README.md','LICENSE' -Destination $dist -Force
-$hash = (Get-FileHash -LiteralPath (Join-Path $dist 'MulchPatcher.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
-[IO.File]::WriteAllText((Join-Path $dist 'SHA256SUMS.txt'), "$hash  MulchPatcher.exe`n", [Text.Encoding]::ASCII)
-$version = [Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $dist 'MulchPatcher.exe')).ProductVersion
-Compress-Archive -LiteralPath (Join-Path $dist 'MulchPatcher.exe'),(Join-Path $dist 'README.md'),(Join-Path $dist 'LICENSE'),(Join-Path $dist 'SHA256SUMS.txt') -DestinationPath (Join-Path $dist "MulchPatcher-v$version-windows.zip") -Force
+Copy-Item -LiteralPath 'bin\Release\MulchPatcher.exe' -Destination $dist -Force
 Write-Output ('Release files: ' + $dist)

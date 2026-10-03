@@ -8,7 +8,7 @@ WinIPSと同じ404×162ピクセルの小さな画面で、**IPS / BPS / UPS** �
 ## ダウンロード
 
 [Releases](https://github.com/pit-true/mulch-patcher/releases/latest) の `MulchPatcher.exe` をダウンロードして実行してください。
-ZIPにはEXE・説明書・ライセンス・SHA256が入っています。追加DLLやインストーラーは不要です。
+配布ファイルはEXEだけです。追加DLLやインストーラーは不要です。
 Windows 10 / 11、.NET Framework 4.8で動作します。日本語UIです。
 
 ## パッチ適用
@@ -75,7 +75,7 @@ NuGetパッケージや外部DLLへの依存はありません。
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-Release用EXEとZIPを `dist/` に生成し、テストを実行します。
+Release用EXEを `dist/` に生成し、テストを実行します。
 GitHub ActionsでもWindows上でビルド・テストし、`v*` タグでReleaseに成果物を添付します。
 
 テストは生成したダミーデータだけを使います。ランダムな差分、全BPS命令、CRC不一致、破損した入力、IPS境界、
