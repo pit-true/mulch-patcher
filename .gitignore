@@ -14,4 +14,6 @@ dist/
 *.ips
 *.bps
 *.ups
+*.exe
+*.dll
 preview.png
