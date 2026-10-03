@@ -27,4 +27,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create $env:GITHUB_REF_NAME dist/MulchPatcher.exe dist/MulchPatcher-v1.0.0-windows.zip dist/SHA256SUMS.txt --title "Mulch Patcher $env:GITHUB_REF_NAME" --notes-file docs/release-v1.0.0.md --verify-tag
+          gh release create $env:GITHUB_REF_NAME dist/MulchPatcher.exe "dist/MulchPatcher-$env:GITHUB_REF_NAME-windows.zip" dist/SHA256SUMS.txt --title "Mulch Patcher $env:GITHUB_REF_NAME" --notes-file "docs/release-$env:GITHUB_REF_NAME.md" --verify-tag

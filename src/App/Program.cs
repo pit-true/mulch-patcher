@@ -31,7 +31,7 @@ namespace MulchPatcher
                     }
                     else if (args.Length == 1 && (args[0] == "--help" || args[0] == "--version"))
                     {
-                        Console.WriteLine("Mulch Patcher 1.0.0\n--apply <patch> <original> <new-output>\n--create <ips|bps|ups> <original> <modified> <new-patch>\nExisting files are never overwritten.");
+                        Console.WriteLine("Mulch Patcher " + Application.ProductVersion + "\n--apply <patch> <original> <new-output>\n--create <ips|bps|ups> <original> <modified> <new-patch>\nExisting files are never overwritten.");
                     }
                     else throw new ArgumentException("Invalid arguments. Use --help.");
                     return 0;

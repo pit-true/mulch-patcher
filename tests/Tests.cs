@@ -269,47 +269,67 @@ namespace MulchPatcher
             Equal((byte[])ups.GetMethod("Apply", new[] { typeof(byte[]) }).Invoke(loaded, new object[] { a }), b, "NUPS applies Mulch UPS");
             Console.WriteLine("PASS: bidirectional Flips BPS/IPS, WinIPS IPS, NUPS UPS compatibility; real 16 -> 32 MiB expansion through Flips.");
         }
+        private sealed class TestForm : MainForm
+        {
+            internal string Message;
+            internal MessageBoxIcon MessageIcon;
+            internal TestForm() : base(new string[0]) { }
+            protected override void ShowMessage(string message, MessageBoxIcon icon)
+            { Message = message; MessageIcon = icon; }
+        }
         private static void Gui(string screenshot)
         {
             Application.EnableVisualStyles();
-            using (MainForm form = new MainForm(new string[0]))
+            using (TestForm form = new TestForm())
             {
                 Assert(form.Text == "Mulch Patcher", "GUI title");
                 form.Show(); Application.DoEvents();
                 BindingFlags fields = BindingFlags.Instance | BindingFlags.NonPublic;
                 Func<string, object> field = name => typeof(MainForm).GetField(name, fields).GetValue(form);
-                TextBox first = (TextBox)field("first"), second = (TextBox)field("second"), output = (TextBox)field("output"), log = (TextBox)field("log");
-                RadioButton create = (RadioButton)field("create"), apply = (RadioButton)field("apply");
-                ComboBox format = (ComboBox)field("format");
-                Assert(format.Text == "BPS" && !format.Enabled, "BPS default / format automatic when applying");
+                TextBox first = (TextBox)field("first"), second = (TextBox)field("second");
+                ComboBox operation = (ComboBox)field("operation");
+                MethodInfo getOutput = typeof(MainForm).GetMethod("GetOutputPath", fields);
+                Func<string> outputPath = () => (string)getOutput.Invoke(form, new object[0]);
+                Assert(form.ClientSize.Width <= 410 && form.ClientSize.Height <= 170, "WinIPS-sized client area");
+                Assert(typeof(MainForm).GetField("output", fields) == null, "No output textbox");
+                Assert(typeof(MainForm).GetField("log", fields) == null && typeof(MainForm).GetField("hint", fields) == null, "No log or explanatory text");
+                Assert(operation.SelectedIndex == 0 && operation.Items.Count == 4, "Single operation selector");
                 first.Text = Path.Combine(Root, "expanded.bps"); second.Text = Path.Combine(Root, "original16.bin");
-                Assert(output.Text == Path.Combine(Root, "expanded.bin"), "WinIPS-style default output");
-                string custom = Path.Combine(Root, "my-output.bin"); output.Text = custom;
-                first.Text = Path.Combine(Root, "expanded.ups");
-                Assert(output.Text == custom, "Manual output path preserved");
-                create.Checked = true;
-                Assert(first.Text.Length == 0 && second.Text.Length == 0 && output.Text.Length == 0, "Mode change clears input roles");
-                Assert(format.Enabled, "Creation format can be selected");
+                Assert(outputPath() == Path.Combine(Root, "expanded.bin"), "WinIPS-style default output");
+                operation.SelectedIndex = 1;
+                Assert(first.Text.Length == 0 && second.Text.Length == 0, "Mode change clears input roles");
                 first.Text = Path.Combine(Root, "元 ROM.bin"); second.Text = Path.Combine(Root, "変更後 ROM.bin");
-                Assert(output.Text == Path.Combine(Root, "変更後 ROM.bps"), "Creation default filename");
-                format.Text = "UPS";
-                Assert(output.Text == Path.Combine(Root, "変更後 ROM.ups"), "Format selection changes extension");
+                Assert(outputPath() == Path.Combine(Root, "変更後 ROM.bps"), "Creation default filename");
+                operation.SelectedIndex = 2;
+                Assert(first.Text.Length > 0 && second.Text.Length > 0, "Changing creation format keeps input selection");
+                Assert(outputPath() == Path.Combine(Root, "変更後 ROM.ups"), "Format selection changes extension");
                 MethodInfo execute = typeof(MainForm).GetMethod("Execute", fields);
+                string created = outputPath();
                 WaitGui((Task)execute.Invoke(form, new object[0]));
-                string created = output.Text;
-                Assert(File.Exists(created) && log.Text.Contains("作成・検証完了"), "GUI creates and verifies UPS patch");
-                apply.Checked = true;
+                Assert(File.Exists(created) && form.Message.Contains("作成が完了"), "GUI creates and verifies UPS patch");
+                operation.SelectedIndex = 0;
                 first.Text = created; second.Text = Path.Combine(Root, "元 ROM.bin");
-                string applied = output.Text;
+                string applied = outputPath();
                 WaitGui((Task)execute.Invoke(form, new object[0]));
                 Equal(File.ReadAllBytes(applied), File.ReadAllBytes(Path.Combine(Root, "変更後 ROM.bin")), "GUI apply exact output");
-                Assert(log.Text.Contains("適用完了"), "GUI apply success message");
+                Assert(form.Message.Contains("適用が完了"), "GUI apply success dialog");
+                string repeated = outputPath();
+                Assert(repeated != applied && !File.Exists(repeated) && Path.GetFileName(repeated).StartsWith("変更後 ROM_"), "Repeated apply automatically chooses new filename");
                 WaitGui((Task)execute.Invoke(form, new object[0]));
-                Assert(log.Text.Contains("処理できませんでした") && log.Text.Contains("存在"), "GUI refuses existing output");
+                Equal(File.ReadAllBytes(repeated), File.ReadAllBytes(applied), "Repeated apply preserves earlier output");
+                first.Text = Path.Combine(Root, "bad.bps");
+                string failedOutput = outputPath();
+                WaitGui((Task)execute.Invoke(form, new object[0]));
+                Assert(form.MessageIcon == MessageBoxIcon.Error && !File.Exists(failedOutput), "Invalid patch shows error dialog and writes nothing");
+                second.Text = Path.Combine(Root, "bad.bin");
+                Assert(outputPath() != Path.GetFullPath(second.Text), "Auto output cannot alias original path");
+                // Verify drag/drop behavior without manipulating the system clipboard.
+                MethodInfo drop = typeof(MainForm).GetMethod("DropPaths", fields);
+                operation.SelectedIndex = 1;
+                drop.Invoke(form, new object[] { new[] { Path.Combine(Root, "expanded.bps"), Path.Combine(Root, "original16.bin") } });
+                Assert(operation.SelectedIndex == 0 && first.Text.EndsWith("expanded.bps") && second.Text.EndsWith("original16.bin"), "Patch and ROM drop selects apply operation");
                 // Screenshot a clean initial dialog, without machine-specific paths.
-                format.Text = "BPS";
-                create.Checked = true; apply.Checked = true;
-                log.Text = "ファイルを選択するか、この画面へドラッグ＆ドロップしてください。\r\n元ROMと既存ファイルは上書きしません。";
+                operation.SelectedIndex = 1; operation.SelectedIndex = 0;
                 if (screenshot != null)
                 {
                     using (Bitmap bitmap = new Bitmap(form.Width, form.Height))
