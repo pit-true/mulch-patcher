@@ -1,0 +1,26 @@
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>MulchPatcher</AssemblyName>
+    <RootNamespace>MulchPatcher</RootNamespace>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
+    <Optimize>true</Optimize>
+    <Deterministic>true</Deterministic>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <ApplicationManifest>src\App\app.manifest</ApplicationManifest>
+    <StartupObject>MulchPatcher.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Compile Include="src\Core\*.cs" />
+    <Compile Include="src\App\*.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

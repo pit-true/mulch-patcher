@@ -1,0 +1,17 @@
+bin/
+obj/
+dist/
+.vs/
+*.user
+*.gba
+*.gb
+*.gbc
+*.nes
+*.sfc
+*.smc
+*.rom
+*.bak
+*.ips
+*.bps
+*.ups
+preview.png
